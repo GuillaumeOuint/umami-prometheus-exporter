@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 50,
+  "id": 51,
   "links": [],
   "panels": [
     {
@@ -400,7 +400,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(value) (rate(umami_metric_value{name=\"$website\", type=\"country\"}[2m]))",
+          "expr": "sum by(value) (rate(umami_metric_value{name=~\"$website\", type=\"country\"}[2m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -497,7 +497,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(value) (rate(umami_metric_value{name=\"$website\", type=\"device\"}[2m]))",
+          "expr": "sum by(value) (rate(umami_metric_value{name=~\"$website\", type=\"device\"}[2m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -594,7 +594,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(value) (rate(umami_metric_value{name=\"$website\", type=\"os\"}[2m]))",
+          "expr": "sum by(value) (rate(umami_metric_value{name=~\"$website\", type=\"os\"}[2m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -691,7 +691,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(value) (rate(umami_metric_value{name=\"$website\", type=\"browser\"}[2m]))",
+          "expr": "sum by(value) (rate(umami_metric_value{name=~\"$website\", type=\"browser\"}[2m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -788,7 +788,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "rate(umami_website_bounces{name=\"$website\"}[2m])",
+          "expr": "rate(umami_website_bounces{name=~\"$website\"}[2m])",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "Bounce",
@@ -802,14 +802,16 @@
     }
   ],
   "preload": false,
-  "refresh": "",
+  "refresh": "5s",
   "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
