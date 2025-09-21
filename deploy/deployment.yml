@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: umami-exporter
+  labels:
+    app: umami-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: umami-exporter
+  template:
+    metadata:
+      labels:
+        app: umami-exporter
+    spec:
+      containers:
+        - name: umami-exporter
+          image: guillaumeouint2/umami-exporter:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: metrics
+              containerPort: 9465
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: umami-exporter-secret
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9465
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9465
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+            requests:
+              cpu: "50m"
+              memory: "64Mi"

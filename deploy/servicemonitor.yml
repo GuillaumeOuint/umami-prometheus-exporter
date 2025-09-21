@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: umami-exporter
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: umami-exporter
+  namespaceSelector:
+    any: true
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 60s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: ["__name__"]
+          regex: 'umami_.*'
+          action: keep
