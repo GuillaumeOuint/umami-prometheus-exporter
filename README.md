@@ -95,12 +95,12 @@ Security
 
 Development
 
-- Code entrypoint: [`cmd/exporter/main.go`](cmd/exporter/main.go:1)
-- Config loader: [`internal/config/config.go`](internal/config/config.go:1)
-- Umami client: [`internal/umami/client.go`](internal/umami/client.go:1)
-- Metrics registration: [`internal/metrics/metrics.go`](internal/metrics/metrics.go:1)
-- Updater logic: [`internal/updater/updater.go`](internal/updater/updater.go:1)
-- HTTP server: [`internal/server/server.go`](internal/server/server.go:1)
+- Code entrypoint: [`cmd/exporter/main.go`](cmd/exporter/main.go)
+- Config loader: [`internal/config/config.go`](internal/config/config.go)
+- Umami client: [`internal/umami/client.go`](internal/umami/client.go)
+- Metrics registration: [`internal/metrics/metrics.go`](internal/metrics/metrics.go)
+- Updater logic: [`internal/updater/updater.go`](internal/updater/updater.go)
+- HTTP server: [`internal/server/server.go`](internal/server/server.go)
 
 Contributing
 
