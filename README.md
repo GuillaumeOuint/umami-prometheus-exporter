@@ -108,4 +108,4 @@ Contributing
 
 License
 
-- MIT (or choose your preferred license)
+- MIT
