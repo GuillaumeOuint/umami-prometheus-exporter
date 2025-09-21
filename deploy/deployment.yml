@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: umami-exporter
-          image: guillaumeouint2/umami-exporter:1.0.0
+          image: guillaumeouint2/umami-exporter:1.0.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: metrics

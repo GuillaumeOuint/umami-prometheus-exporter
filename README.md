@@ -46,12 +46,12 @@ Docker
 
 Docker Hub image
 
-The official Docker image is available on Docker Hub at `guillaumeouint2/umami-exporter`. The current published tag is `1.0.0`.
+The official Docker image is available on Docker Hub at `guillaumeouint2/umami-exporter`. The current published tag is `1.0.1`.
 
 You can pull and run the prebuilt image:
 
-   docker pull guillaumeouint2/umami-exporter:1.0.0
-   docker run --rm --env-file .env -p 9465:9465 guillaumeouint2/umami-exporter:1.0.0
+   docker pull guillaumeouint2/umami-exporter:1.0.1
+   docker run --rm --env-file .env -p 9465:9465 guillaumeouint2/umami-exporter:1.0.1
 
 Kubernetes deployment (optional)
 
@@ -85,10 +85,10 @@ Apply the manifests (example):
 
 Notes:
 
-- The `deploy/deployment.yml` uses image `umami-exporter:latest` by default. Replace this with your registry image (for example `myregistry/umami-exporter:1.0.0`) and push before applying:
+- The `deploy/deployment.yml` uses image `umami-exporter:latest` by default. Replace this with your registry image (for example `myregistry/umami-exporter:1.0.1`) and push before applying:
 
-   docker build -t myregistry/umami-exporter:1.0.0 .
-   docker push myregistry/umami-exporter:1.0.0
+   docker build -t myregistry/umami-exporter:1.0.1 .
+   docker push myregistry/umami-exporter:1.0.1
 
 - The ServiceMonitor selects services by labels. The example uses `app: umami-exporter` and a label `release: prometheus` on the ServiceMonitor; change the labels if your Prometheus Operator has a different selector.
 

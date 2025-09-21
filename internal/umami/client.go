@@ -260,9 +260,16 @@ func (c *Client) GetWebsites(ctx context.Context) ([]Website, error) {
 }
 
 // GetWebsiteStats fetches summarized stats for the website.
+// It provides a default date range (last 30 days) as Umami expects numeric startAt/endAt.
 func (c *Client) GetWebsiteStats(ctx context.Context, id string) (*WebsiteStats, error) {
 	var ws WebsiteStats
-	if err := c.doRequest(ctx, http.MethodGet, "/api/websites/"+id+"/stats", nil, nil, &ws); err != nil {
+	now := time.Now()
+	start := now.Add(-30 * 24 * time.Hour)
+	q := map[string]string{
+		"startAt": strconv.FormatInt(start.UnixMilli(), 10),
+		"endAt":   strconv.FormatInt(now.UnixMilli(), 10),
+	}
+	if err := c.doRequest(ctx, http.MethodGet, "/api/websites/"+id+"/stats", q, nil, &ws); err != nil {
 		return nil, err
 	}
 	return &ws, nil
@@ -280,8 +287,15 @@ func (c *Client) GetWebsiteActive(ctx context.Context, id string) (float64, erro
 }
 
 // GetWebsiteMetrics fetches metric entries for the given type (e.g. url, referrer).
+// Adds a default date range (last 30 days) to conform with Umami API expectations.
 func (c *Client) GetWebsiteMetrics(ctx context.Context, id, typ string, limit int) ([]MetricEntry, error) {
-	q := map[string]string{"type": typ}
+	now := time.Now()
+	start := now.Add(-30 * 24 * time.Hour)
+	q := map[string]string{
+		"type":    typ,
+		"startAt": strconv.FormatInt(start.UnixMilli(), 10),
+		"endAt":   strconv.FormatInt(now.UnixMilli(), 10),
+	}
 	if limit > 0 {
 		q["limit"] = strconv.Itoa(limit)
 	}
