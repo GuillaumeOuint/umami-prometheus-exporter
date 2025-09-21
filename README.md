@@ -6,46 +6,105 @@ The exporter logs in to Umami using credentials and refreshes data periodically 
 
 Project layout
 
-- [`cmd/exporter/main.go`](cmd/exporter/main.go:1) - entrypoint
-- [`internal/config/config.go`](internal/config/config.go:1) - environment configuration loader
-- [`internal/umami/client.go`](internal/umami/client.go:1) - Umami API client (login + endpoints)
-- [`internal/metrics/metrics.go`](internal/metrics/metrics.go:1) - Prometheus collectors and registration
-- [`internal/updater/updater.go`](internal/updater/updater.go:1) - periodic fetcher that updates metrics
-- [`internal/server/server.go`](internal/server/server.go:1) - HTTP server wiring (/metrics, /healthz)
+- [`cmd/exporter/main.go`](cmd/exporter/main.go) - entrypoint
+- [`internal/config/config.go`](internal/config/config.go) - environment configuration loader
+- [`internal/umami/client.go`](internal/umami/client.go) - Umami API client (login + endpoints)
+- [`internal/metrics/metrics.go`](internal/metrics/metrics.go) - Prometheus collectors and registration
+- [`internal/updater/updater.go`](internal/updater/updater.go) - periodic fetcher that updates metrics
+- [`internal/server/server.go`](internal/server/server.go) - HTTP server wiring (/metrics, /healthz)
+- [`deploy/`](deploy/) - Kubernetes manifests (deployment, service, secret, servicemonitor)
 
 Prerequisites
 
 - Go 1.25+ (for local build)
 - An Umami Analytics instance reachable from this exporter
-- A Prometheus server to scrape this exporter
+- A Prometheus server to scrape this exporter (or Prometheus Operator / kube-prometheus-stack)
 
 Build & run
 
 1. Build locally
 
-  go build -o umami-exporter ./cmd/exporter
+   go build -o umami-exporter ./cmd/exporter
 
 2. Run
 
-  UMAMI_URL=https://umami.example.com UMAMI_USERNAME=you UMAMI_PASSWORD=pass ./umami-exporter
+   UMAMI_URL=https://umami.example.com UMAMI_USERNAME=you UMAMI_PASSWORD=pass ./umami-exporter
 
 3. Alternatively use go run:
 
-  UMAMI_URL=https://umami.example.com UMAMI_USERNAME=you UMAMI_PASSWORD=pass go run ./cmd/exporter
+   UMAMI_URL=https://umami.example.com UMAMI_USERNAME=you UMAMI_PASSWORD=pass go run ./cmd/exporter
 
 Docker
 
 - Build:
 
-  docker build -t umami-exporter:latest .
+   docker build -t umami-exporter:latest .
 
 - Run (use `.env` or pass envs directly):
 
-  docker run --rm --env-file .env -p 9465:9465 umami-exporter:latest
+   docker run --rm --env-file .env -p 9465:9465 umami-exporter:latest
+
+Docker Hub image
+
+The official Docker image is available on Docker Hub at `guillaumeouint2/umami-exporter`. The current published tag is `1.0.0`.
+
+You can pull and run the prebuilt image:
+
+   docker pull guillaumeouint2/umami-exporter:1.0.0
+   docker run --rm --env-file .env -p 9465:9465 guillaumeouint2/umami-exporter:1.0.0
+
+Kubernetes deployment (optional)
+
+This repository contains Kubernetes manifests under the `deploy/` directory to run the exporter inside a cluster and expose it to Prometheus via ServiceMonitor (Prometheus Operator).
+
+Files:
+
+- [`deploy/deployment.yml`](deploy/deployment.yml) — Deployment + Service manifest (container port 9465)
+- [`deploy/service.yml`](deploy/service.yml) — Service targeted by ServiceMonitor
+- [`deploy/secret.yml`](deploy/secret.yml) — Secret template with environment variables
+- [`deploy/servicemonitor.yml`](deploy/servicemonitor.yml) — ServiceMonitor for Prometheus Operator
+
+Apply the manifests (example):
+
+1. Create the secret (recommended way to avoid embedding credentials):
+
+   kubectl create secret generic umami-exporter-secret \
+     --from-literal=UMAMI_URL='https://umami.example.com' \
+     --from-literal=UMAMI_USERNAME='user' \
+     --from-literal=UMAMI_PASSWORD='pass' \
+     -n <namespace>
+
+2. Apply deployment and service:
+
+   kubectl apply -f deploy/deployment.yml -n <namespace>
+   kubectl apply -f deploy/service.yml -n <namespace>
+
+3. If you use Prometheus Operator, apply the ServiceMonitor:
+
+   kubectl apply -f deploy/servicemonitor.yml -n <namespace>
+
+Notes:
+
+- The `deploy/deployment.yml` uses image `umami-exporter:latest` by default. Replace this with your registry image (for example `myregistry/umami-exporter:1.0.0`) and push before applying:
+
+   docker build -t myregistry/umami-exporter:1.0.0 .
+   docker push myregistry/umami-exporter:1.0.0
+
+- The ServiceMonitor selects services by labels. The example uses `app: umami-exporter` and a label `release: prometheus` on the ServiceMonitor; change the labels if your Prometheus Operator has a different selector.
+
+- Ensure the Prometheus Operator and the ServiceMonitor CRD are installed in your cluster (for kube-prometheus-stack / prometheus-operator).
+
+- Use SealedSecrets/ExternalSecrets or another secrets-management solution for production instead of committing credentials in YAML.
+
+- Verify deployment:
+
+   kubectl get pods -l app=umami-exporter -n <namespace>
+   kubectl get svc umami-exporter -n <namespace>
+   kubectl get servicemonitor -l app=umami-exporter --all-namespaces
 
 Configuration
 
-Copy [`.env.example`](.env.example:1) to `.env` and set values, or export the following environment variables:
+Copy [`.env.example`](.env.example) to `.env` and set values, or export the following environment variables:
 
 - UMAMI_URL (required) — base URL of your Umami instance, include scheme (https://...)
 - UMAMI_USERNAME (required)
@@ -69,13 +128,15 @@ Exposed metrics
 - umami_website_active_visitors{website_id,name,domain}
 - umami_metric_value{website_id,name,domain,type,value} — generic metric for types such as url/referrer/browser/etc.
 
-Prometheus scrape example
+Prometheus scrape example (static scrape)
 
 scrape_configs:
   - job_name: 'umami'
     static_configs:
       - targets: ['umami-exporter:9465']
     metrics_path: /metrics
+
+If using Prometheus Operator / ServiceMonitor, the provided ServiceMonitor will configure scraping automatically when applied.
 
 Health endpoint
 
